@@ -53,8 +53,8 @@
 <?php } ?>
 <?php if($_SESSION['login_member_role'] == "ADMINISTRATOR"){?>
           <li><a href="inventoryAdjustment.php"><i class="fa fa-circle-o"></i> Inventory Adjustment</a></li>
-<!--          <li><a href="creditPaymentAdjustment.php"><i class="fa fa-circle-o"></i> Credit Payment Adjustment</a></li>
-<?php } ?> -->
+          <li><a href="creditPaymentAdjustment.php"><i class="fa fa-circle-o"></i> Credit Payment Adjustment</a></li>
+<?php } ?>
         </ul>
       </li>
 <?php }?>
