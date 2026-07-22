@@ -133,13 +133,13 @@
 
                 // Build the date filter based on report type
                 if (Input::get('rptType') == 1) {
-                  $filter = "Date(tbl_sales.timestamp) = '".$dt->format('Y-m-d')."'";
+                  $filter = "Date(s.timestamp) = '".$dt->format('Y-m-d')."'";
                 }
                 else if (Input::get('rptType') == 2) {
-                  $filter = "Month(tbl_sales.timestamp) = '".$dt->format('m')."' AND Year(tbl_sales.timestamp) = '".$dt->format('Y')."'";
+                  $filter = "Month(s.timestamp) = '".$dt->format('m')."' AND Year(s.timestamp) = '".$dt->format('Y')."'";
                 }
                 else {
-                  $filter = "Year(tbl_sales.timestamp) = '".$dt->format('Y')."'";
+                  $filter = "Year(s.timestamp) = '".$dt->format('Y')."'";
                 }
 
                 // Query each payment type using SUM from tbl_payment joined with tbl_sales
