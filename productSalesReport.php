@@ -19,7 +19,7 @@
             <div class="col-md-12">
               <!-- Default box -->
               <div class="box">
-                <form action="salesReport.php" method="get">
+                <form action="productSalesReport.php" method="get">
                   
                     <div class="box-header with-border">
                       <h3 class="box-title"> Product Sales Report</h3>
