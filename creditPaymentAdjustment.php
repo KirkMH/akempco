@@ -38,6 +38,24 @@ if (isset($_POST['save_adjustment'])) {
   }
 }
 
+// Process Deletion of Credit Payment
+$delete_cp_no = Input::get('delete_cp_no');
+if (!empty($delete_cp_no)) {
+  $cp_no = intval($delete_cp_no);
+  $original = $db->select_one("*", "tbl_creditpayment", "WHERE cp_no = $cp_no");
+  if ($original) {
+    if ($db->delete('tbl_creditpayment', "WHERE cp_no = $cp_no")) {
+      $audit->record($_SESSION['login_member_no'], "delete", "tbl_creditpayment", "cp_no=$cp_no", date('Y-m-d'), date('H:i:s'));
+      Session::flash('msg', "Payment record successfully deleted!");
+      Redirect::to("creditPaymentAdjustment.php?customer_type=" . $original['customer_type'] . "&customer_no=" . $original['customer_no']);
+    } else {
+      Session::flash('err', "Opps. Sorry, there was an error deleting the payment record.");
+    }
+  } else {
+    Session::flash('err', "Payment record not found.");
+  }
+}
+
 $token = Token::generate();
 
 $edit_cp_no = Input::get('edit_cp_no');
@@ -214,10 +232,10 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/akempco/includes/sidebar.php';
                 <table class="table table-bordered table-striped">
                   <thead>
                     <tr>
+                      <th style="width: 100px;">Actions</th>
                       <th>Amount Paid</th>
                       <th>Date Paid</th>
                       <th>Reference No.</th>
-                      <th style="width: 100px;">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -226,13 +244,18 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/akempco/includes/sidebar.php';
                       if ($payments_list && $payments_list->num_rows > 0) {
                         while ($row = $payments_list->fetch_assoc()) {
                           ?>
+                          <?php
+                            $amt_str = "P " . number_format($row['paid'], 2, ".", ",");
+                            $ref_str = htmlspecialchars($row['ref_no'], ENT_QUOTES);
+                          ?>
                           <tr>
+                            <td>
+                              <a href="creditPaymentAdjustment.php?edit_cp_no=<?php echo $row['cp_no']; ?>" class="btn btn-warning btn-xs">Edit</a>&nbsp;
+                              <a href="creditPaymentAdjustment.php?delete_cp_no=<?php echo $row['cp_no']; ?>" class="btn btn-danger btn-xs" onclick="return confirmDelete(event, this.href, '<?php echo $amt_str; ?>', '<?php echo $ref_str; ?>');">Delete</a>
+                            </td>
                             <td align="right">P <?php echo number_format($row['paid'], 2, ".", ","); ?></td>
                             <td><?php echo date("Y-m-d", strtotime($row['payDate'])); ?></td>
                             <td><?php echo htmlspecialchars($row['ref_no']); ?></td>
-                            <td>
-                              <a href="creditPaymentAdjustment.php?edit_cp_no=<?php echo $row['cp_no']; ?>" class="btn btn-warning btn-xs">Adjust</a>
-                            </td>
                           </tr>
                           <?php
                         }
@@ -256,7 +279,39 @@ require_once $_SERVER['DOCUMENT_ROOT'] . '/akempco/includes/sidebar.php';
   </section>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script language="javascript">
+function confirmDelete(event, url, amount, refNo) {
+  event.preventDefault();
+  var message = "Do you really want to delete this payment record?";
+  if (amount && refNo) {
+    message = "Do you really want to delete payment of " + amount + " (Ref No: " + refNo + ")?";
+  } else if (amount) {
+    message = "Do you really want to delete payment of " + amount + "?";
+  }
+
+  if (typeof Swal !== 'undefined') {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: message,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        window.location.href = url;
+      }
+    });
+  } else {
+    if (confirm(message)) {
+      window.location.href = url;
+    }
+  }
+  return false;
+}
+
 function reloadWith() {
   var val = document.getElementById('customer_type').value;
   if (val == "") {
